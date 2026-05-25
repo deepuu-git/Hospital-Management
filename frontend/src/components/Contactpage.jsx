@@ -63,7 +63,7 @@ const ContactPage = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:4000/api/contact", {
+      const res = await fetch("https://backend-wy5h.onrender.com/api/contact", {
         method: "POST",
 
         headers: {

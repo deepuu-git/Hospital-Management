@@ -1,451 +1,626 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { serviceDashboardStyles } from '../assets/dummyStyles';
-import { MouseRounded } from '@mui/icons-material';
-import { BadgeIndianRupee, Calendar, CheckCircle, ClipboardList, Search, XCircle } from "lucide-react";
-
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { serviceDashboardStyles } from "../assets/dummyStyles";
+import { MouseRounded } from "@mui/icons-material";
+import {
+  BadgeIndianRupee,
+  Calendar,
+  CheckCircle,
+  ClipboardList,
+  Search,
+  XCircle,
+} from "lucide-react";
 
 // Normalize the bakend data that is coming from the DB
 function normalizeService(doc) {
-    if (!doc) return null;
-    const id = doc._id || doc.id || String(Math.random()).slice(2);
-    const name = doc.name || doc.title || doc.serviceName || "Untitled Service";
-    const price = Number(doc.price ?? doc.fee ?? doc.fees ?? doc.cost ?? doc.amount) || 0;
-    const image = doc.imageUrl || doc.image || doc.avatar || `https://i.pravatar.cc/150?u=${id}`;
+  if (!doc) return null;
+  const id = doc._id || doc.id || String(Math.random()).slice(2);
+  const name = doc.name || doc.title || doc.serviceName || "Untitled Service";
+  const price =
+    Number(doc.price ?? doc.fee ?? doc.fees ?? doc.cost ?? doc.amount) || 0;
+  const image =
+    doc.imageUrl ||
+    doc.image ||
+    doc.avatar ||
+    `https://i.pravatar.cc/150?u=${id}`;
 
-    // various possible stat shapes
-    const totalAppointments = 
-    doc.totalAppointments ?? 
-    doc.appointments?.total ?? 
-    doc.count ?? 
-    doc.stats?.total ?? 
+  // various possible stat shapes
+  const totalAppointments =
+    doc.totalAppointments ??
+    doc.appointments?.total ??
+    doc.count ??
+    doc.stats?.total ??
     doc.booking ??
     0;
-    
-    const completed = 
+
+  const completed =
     doc.completed ??
     doc.appointments?.completed ??
     doc.stats?.completed ??
     doc.completedAppointments ??
     0;
 
-    const canceled = 
+  const canceled =
     doc.canceled ??
     doc.appointments?.canceled ??
     doc.stats?.canceled ??
     doc.canceledAppointments ??
     0;
 
-    return {
-        id,
-        name,
-        price,
-        image,
-        totalAppointments: Number(totalAppointments) || 0,
-        completed: Number(completed) || 0,
-        canceled: Number(canceled) || 0,
-        raw: doc,
-    };
-}    
+  return {
+    id,
+    name,
+    price,
+    image,
+    totalAppointments: Number(totalAppointments) || 0,
+    completed: Number(completed) || 0,
+    canceled: Number(canceled) || 0,
+    raw: doc,
+  };
+}
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://backend-wy5h.onrender.com";
 
 const ServiceDashboard = ({ services: servicesProp = null }) => {
-    const [services, setServices] = useState(
-        Array.isArray(servicesProp) ? servicesProp.map(normalizeService) : [],
-    );
-    const [loading, setLoading] = useState(!Array.isArray(servicesProp));
-    const [error, setError] = useState(null);
+  const [services, setServices] = useState(
+    Array.isArray(servicesProp) ? servicesProp.map(normalizeService) : [],
+  );
+  const [loading, setLoading] = useState(!Array.isArray(servicesProp));
+  const [error, setError] = useState(null);
 
-    const[searchQuery, setSearchQuery] = useState("");
-    const [showAll, setShowAll] = useState(false);
-    
-    const mountedRef = useRef(true);
-    const fetchingRef = useRef(false);
-    const pollHandleref = useRef(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showAll, setShowAll] = useState(false);
 
-    // helper function to fetch options
-    function buildFetchOptions() {
-        const opts = {
-            method: "GET",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        };
-        const token = localStorage.getItem("authToken");
-        if (token) opts.headers["Authorization"] = `Bearer ${token}`;
-        return opts;
-    }
+  const mountedRef = useRef(true);
+  const fetchingRef = useRef(false);
+  const pollHandleref = useRef(null);
 
-    // fetch the service from the server side
-    async function fetchServices({ showLoading = true } = {}) {
-        if (fetchingRef.current) return;
-        fetchingRef.current = true;
-        try {
-            if (showLoading) {
-                setLoading(true);
-                setError(null);
-            }
+  // helper function to fetch options
+  function buildFetchOptions() {
+    const opts = {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    const token = localStorage.getItem("authToken");
+    if (token) opts.headers["Authorization"] = `Bearer ${token}`;
+    return opts;
+  }
 
-            const url = `${API_BASE}/api/service-appointments/stats/summary`;
-            const res = await fetch(url, buildFetchOptions());
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(
-                    body?.message || `Failed to fetch services (${res.status})`,
-                );
-            }
-            const body = await res.json();
+  // fetch the service from the server side
+  async function fetchServices({ showLoading = true } = {}) {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+    try {
+      if (showLoading) {
+        setLoading(true);
+        setError(null);
+      }
 
-            let list = [];
-            if (Array.isArray(body)) list = body;
-            else if (Array.isArray(body.services)) list = body.services;
-            else if (Array.isArray(body.data)) list = body.data;
-            else if (Array.isArray(body.items)) list = body.items;
-            else {
-                const maybeArray = Object.values(body).find((v) => Array.isArray(v));
-                if (maybeArray) list = maybeArray;
-            }
-
-            const normalized = (list || []).map(normalizeService).filter(Boolean);
-            if (mountedRef.current) {
-                setServices(normalized);
-                setError(null);
-            }
-        } catch (err) {
-            console.error("Service fetch error:", err);
-            if (mountedRef.current) {
-                setError(err.message || "Failed to load services");
-            }
-        } finally {
-            if (mountedRef.current && showLoading) setLoading(false);
-            fetchingRef.current = false;
-        }
-    }
-
-    useEffect(() => {
-        window.refreshServices = () => fetchServices({ showLoading : true });
-        return () => {
-            try {
-                delete window.refreshServices;
-            } catch {}
-        };
-    }, []); // global helper to refresh the page and fetch the services again
-
-    // make sure that service are present
-    useEffect(() => {
-        mountedRef.current = true;
-        if (Array.isArray(servicesProp)) {
-            setServices(servicesProp.map(normalizeService));
-            setLoading(false);
-            return () => {
-                mountedRef.current = false;
-            };
-        }
-
-        fetchServices({ showLoading: true });
-
-        // a polling while tab is visible
-        function startPolling() {
-            if (pollHandleref.current) return;
-            pollHandleref.current = setInterval(() => {
-                if (document.visibilityState === "visible")
-                    fetchServices({ showLoading: false});
-            }, 10000);
-        }
-
-        function stopPolling() {
-            if (pollHandleref.current) {
-                clearInterval(pollHandleref.current);
-                pollHandleref.current = null;
-            }
-        }
-        startPolling();
-// refresh the onFocus
-         function onFocus() {
-            fetchServices({ showLoading: false });
-        }
-        window.addEventListener("focus", onFocus);
-
-        function onServicesUpdated() {
-            fetchServices({ showLoading: false });
-        }
-        window.addEventListener("services:updated", onServicesUpdated);
-
-        // refresh the localstorage
-        function onStorage(e) {
-            if (e?.key === "service_booking_updated") {
-                fetchServices({ showLoading: false });
-            }
-        }
-        window.addEventListener("storage", onStorage);
-
-        // also refresh the tab when becomes visible
-        function onVisibilityChange() {
-            if (document.visibilityState === "visible") {
-                fetchServices({ showLoading: false });
-            }
-        }
-        document.addEventListener("visibilitychange", onVisibilityChange);
-
-        return () => {
-            mountedRef.current = false;
-            stopPolling();
-            window.removeEventListener("focus", onFocus);
-            window.removeEventListener("services:updated", onServicesUpdated);
-            window.removeEventListener("storage", onStorage);
-            document.removeEventListener("visibilitychange", onVisibilityChange)
-        };
-    }, [servicesProp]);
-
-    // filtering + searching...
-    const filteredServices = useMemo(() => {
-        const q = searchQuery.trim().toLowerCase();
-        if (!q) return services;
-        const qNum = Number(q);
-        return services.filter((s) => {
-            if (s.name.toLowerCase().includes(q)) return true;
-            if (!Number.isNaN(qNum) && s.price <= qNum) return true;
-            if (s.price.toString().includes(q)) return true; 
-            return false;
-        });
-    }, [services, searchQuery]);
-
-    const INITIAL_COUNT = 8;
-    const visibleServices = showAll ? filteredServices : filteredServices.slice(0, INITIAL_COUNT);
-
-    // stats
-    const totals = useMemo(() => {
-        return filteredServices.reduce(
-            (acc, s) => {
-                acc.totalServices += 1;
-                acc.totalAppointments += s.totalAppointments;
-                acc.totleCompleted += s.completed;
-                acc.totalCanceled += s.canceled;
-                acc.totalEarning += s.completed * s.price;
-                return acc;
-            }, 
-            {
-                totalServices: 0,
-                totalAppointments: 0,
-                totalCompleted: 0,
-                totalCanceled: 0,
-                totalEarning: 0,
-            },
+      const url = `${API_BASE}/api/service-appointments/stats/summary`;
+      const res = await fetch(url, buildFetchOptions());
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(
+          body?.message || `Failed to fetch services (${res.status})`,
         );
-    }, [filteredServices]);
+      }
+      const body = await res.json();
 
-    function formatCurrency(v) {
-        return `₹${Number(v || 0).toLocaleString()}`;
+      let list = [];
+      if (Array.isArray(body)) list = body;
+      else if (Array.isArray(body.services)) list = body.services;
+      else if (Array.isArray(body.data)) list = body.data;
+      else if (Array.isArray(body.items)) list = body.items;
+      else {
+        const maybeArray = Object.values(body).find((v) => Array.isArray(v));
+        if (maybeArray) list = maybeArray;
+      }
+
+      const normalized = (list || []).map(normalizeService).filter(Boolean);
+      if (mountedRef.current) {
+        setServices(normalized);
+        setError(null);
+      }
+    } catch (err) {
+      console.error("Service fetch error:", err);
+      if (mountedRef.current) {
+        setError(err.message || "Failed to load services");
+      }
+    } finally {
+      if (mountedRef.current && showLoading) setLoading(false);
+      fetchingRef.current = false;
     }
+  }
+
+  useEffect(() => {
+    window.refreshServices = () => fetchServices({ showLoading: true });
+    return () => {
+      try {
+        delete window.refreshServices;
+      } catch {}
+    };
+  }, []); // global helper to refresh the page and fetch the services again
+
+  // make sure that service are present
+  useEffect(() => {
+    mountedRef.current = true;
+    if (Array.isArray(servicesProp)) {
+      setServices(servicesProp.map(normalizeService));
+      setLoading(false);
+      return () => {
+        mountedRef.current = false;
+      };
+    }
+
+    fetchServices({ showLoading: true });
+
+    // a polling while tab is visible
+    function startPolling() {
+      if (pollHandleref.current) return;
+      pollHandleref.current = setInterval(() => {
+        if (document.visibilityState === "visible")
+          fetchServices({ showLoading: false });
+      }, 10000);
+    }
+
+    function stopPolling() {
+      if (pollHandleref.current) {
+        clearInterval(pollHandleref.current);
+        pollHandleref.current = null;
+      }
+    }
+    startPolling();
+    // refresh the onFocus
+    function onFocus() {
+      fetchServices({ showLoading: false });
+    }
+    window.addEventListener("focus", onFocus);
+
+    function onServicesUpdated() {
+      fetchServices({ showLoading: false });
+    }
+    window.addEventListener("services:updated", onServicesUpdated);
+
+    // refresh the localstorage
+    function onStorage(e) {
+      if (e?.key === "service_booking_updated") {
+        fetchServices({ showLoading: false });
+      }
+    }
+    window.addEventListener("storage", onStorage);
+
+    // also refresh the tab when becomes visible
+    function onVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        fetchServices({ showLoading: false });
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      mountedRef.current = false;
+      stopPolling();
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("services:updated", onServicesUpdated);
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [servicesProp]);
+
+  // filtering + searching...
+  const filteredServices = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return services;
+    const qNum = Number(q);
+    return services.filter((s) => {
+      if (s.name.toLowerCase().includes(q)) return true;
+      if (!Number.isNaN(qNum) && s.price <= qNum) return true;
+      if (s.price.toString().includes(q)) return true;
+      return false;
+    });
+  }, [services, searchQuery]);
+
+  const INITIAL_COUNT = 8;
+  const visibleServices = showAll
+    ? filteredServices
+    : filteredServices.slice(0, INITIAL_COUNT);
+
+  // stats
+  const totals = useMemo(() => {
+    return filteredServices.reduce(
+      (acc, s) => {
+        acc.totalServices += 1;
+        acc.totalAppointments += s.totalAppointments;
+        acc.totleCompleted += s.completed;
+        acc.totalCanceled += s.canceled;
+        acc.totalEarning += s.completed * s.price;
+        return acc;
+      },
+      {
+        totalServices: 0,
+        totalAppointments: 0,
+        totalCompleted: 0,
+        totalCanceled: 0,
+        totalEarning: 0,
+      },
+    );
+  }, [filteredServices]);
+
+  function formatCurrency(v) {
+    return `₹${Number(v || 0).toLocaleString()}`;
+  }
 
   return (
     <div className={serviceDashboardStyles.container}>
-        <div className={serviceDashboardStyles.innerContainer}>
-            {/* Header */}
-            <div className={serviceDashboardStyles.header.container}>
-                <div>
-                    <h1 className={serviceDashboardStyles.header.title}>
-                        Service Dashboard
-                    </h1>
-                    <p className={serviceDashboardStyles.header.subtitle}>
-                        Overview of services, appointments and earning
-                    </p>
-                </div>
+      <div className={serviceDashboardStyles.innerContainer}>
+        {/* Header */}
+        <div className={serviceDashboardStyles.header.container}>
+          <div>
+            <h1 className={serviceDashboardStyles.header.title}>
+              Service Dashboard
+            </h1>
+            <p className={serviceDashboardStyles.header.subtitle}>
+              Overview of services, appointments and earning
+            </p>
+          </div>
 
-                {/** refresh */}
-                <div className={serviceDashboardStyles.refresh.container}>
-                    <div className={serviceDashboardStyles.refresh.countText}>
-                        {loading ? "Loading..." : `${filteredServices.length} services${filteredServices.length !== 1 ? "s" : ""
-                        }`}
-                    </div>
-
-                    <button onClick={() => {
-                        if(Array.isArray(servicesProp)) return;
-                        fetchServices({showLoading: true});
-                    }} className={serviceDashboardStyles.refresh.button(Array.isArray(servicesProp))}
-                    title={Array.isArray(servicesProp) ? "Servicd provided by present component" : "Refresh"}>
-                        Refresh
-                    </button>
-                </div>
+          {/** refresh */}
+          <div className={serviceDashboardStyles.refresh.container}>
+            <div className={serviceDashboardStyles.refresh.countText}>
+              {loading
+                ? "Loading..."
+                : `${filteredServices.length} services${
+                    filteredServices.length !== 1 ? "s" : ""
+                  }`}
             </div>
 
-            <div className={serviceDashboardStyles.statGrid}>
-                <StatCard icon={<ClipboardList size={18} />} label="Total Services" value={totals.totalServices} />
-
-                 <StatCard icon={<Calendar size={18} />} label="Total Appointments" value={totals.totalAppointments} />
-
-                 <StatCard icon={<BadgeIndianRupee size={18} />} label="Total Earnings" value={formatCurrency(totals.totalEarning)} />
-
-                 <StatCard icon={<CheckCircle size={18} />} label="Completed" value={totals.totalCompleted} />
-
-                 <StatCard icon={<XCircle size={18} />} label="Canceled" value={totals.totalCanceled} />
-            </div>
-
-            {/* search bar */}
-            <div className={serviceDashboardStyles.search.container}>
-                <div className={serviceDashboardStyles.search.inputContainer}>
-                    <Search size={16} className=" text-emerald-700" />
-                    <input type="text" placeholder='Search services...' value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className={serviceDashboardStyles.search.input} />
-                    {searchQuery.length > 0 && (
-                        <XCircle size={16} className=' text-red-500 cursor-pointer' onClick={() => setSearchQuery("")} />
-                    )}
-                </div>
-            </div>
-
-            {/* table list for tablet */}
-            <div className={serviceDashboardStyles.table.container}>
-                <div className={serviceDashboardStyles.table.headerMd}>
-                    <div className={serviceDashboardStyles.table.headerText}>Service</div>
-
-                    <div className={serviceDashboardStyles.table.headerText}>Appointments</div>
-
-                    <div className={serviceDashboardStyles.table.headerText}>Completed</div>
-
-                    <div className={serviceDashboardStyles.table.headerText}>Canceled</div>
-
-                    <div className={serviceDashboardStyles.table.headerText}>Earning</div>
-                </div>
-
-                 {/* for desktop*/}
-                 <div className={serviceDashboardStyles.table.headerLg}>
-                        <div className="col-span-5">Service</div>
-                        <div className="col-span-2">Price</div>
-                        <div className={serviceDashboardStyles.table.headerTextLg(1)}>Appointments</div>
-
-                        <div className={serviceDashboardStyles.table.headerTextLg(1)}>Completed</div>
-
-                        <div className={serviceDashboardStyles.table.headerTextLg(1)}>Canceled</div>
-                         <div className='col-span-2 text-right'>Earning</div>
-                    </div>
-
-                    <div className={serviceDashboardStyles.table.body}>{loading ? (
-                        <div className={serviceDashboardStyles.states.loading}>Loading services...</div>
-                    ) : error ? (
-                        <div className={serviceDashboardStyles.states.error}>Error : {error}</div>
-                    ) : visibleServices.length === 0 ? (
-                        <div className={serviceDashboardStyles.states.empty}>No services found</div>
-                    ) : (
-                        visibleServices.map((s) => {
-                            const earning = s.completed * s.price;
-                            return (
-                                <div key={s.id} className={serviceDashboardStyles.table.row}>
-                                    {/* for tablet */}
-                                    <div className={serviceDashboardStyles.table.tabletView}>
-                                        <div className="flex items-center gap-3">
-                                            <div className={serviceDashboardStyles.table.tabletImage}>
-                                                <img src={s.image} alt={s.name}
-                                                className="w-full h-full object-cover" />
-                                            </div>
-
-                                            <div className={serviceDashboardStyles.table.tabletTextContainer}>
-                                                <div className={serviceDashboardStyles.table.tabletServiceName}>{s.name}</div>
-                                                <div className={serviceDashboardStyles.table.tabletPrice}>{formatCurrency(s.price)}</div>
-                                            </div>
-                                        </div>
-
-                                        <div className={serviceDashboardStyles.table.tabletCell}>{s.totalAppointments}</div>
-
-                                        <div className={`${serviceDashboardStyles.table.tabletCell} text-emerald-700`}>{s.completd}</div>
-
-                                        <div className={`${serviceDashboardStyles.table.tabletCell} text-red-500`}>{s.canceled}</div>
-
-                                        <div className={`${serviceDashboardStyles.table.tabletCell} text-right`}>{formatCurrency(earning)}</div>
-                                    </div>
-
-                                 {/* for desktop view */}
-                                    <div className="grid grid-cols-12 items-center gap-2">
-                                        <div className=' col-span-5 flex items-center gap-4'>
-                                            <div className={serviceDashboardStyles.table.desktopImage}><img src={s.image} alt={s.name} className=' w-full h-full object-cover'/></div>
-                                            <h3 className={serviceDashboardStyles.table.desktopServiceName}
-                                            >{s.name}</h3>
-                                        </div>
-
-                                        {/* Price */}
-                                       <div className="col-span-2">
-                                        {formatCurrency(s.price)}
-                                        </div>
-                                        <div className='col-span-1 text-center'>{s.totalAppointments}</div>
-                                        <div className='col-span-1 text-center'>{s.completed}</div>
-                                        <div className='col-span-1 text-center'>{s.canceled}</div>
-                                        <div className="col-span-2 text-right">
-                                         {formatCurrency(earning)}
-                                        </div>
-                                    </div>
-
-                                    {/* Mobile view */}
-                                    <div className={serviceDashboardStyles.table.mobileView}>
-                                        <div className='flex items-start gap-3'>
-                                            <div className={serviceDashboardStyles.table.mobileImage}>
-                                                <img src={s.image} alt={s.name} className='w-full h-full oject-cover' />
-                                            </div>
-
-                                            <div className='flex-1 min-w-0'>
-                                                <div className={serviceDashboardStyles.table.mobileServiceHeader}>
-                                                    <h3 className={serviceDashboardStyles.table.mobileServiceName}>{s.name}</h3>
-                                                    <div className="text-sm font-medium">{formatCurrency(s.price)}</div>
-                                                </div>
-
-                                                <div className={serviceDashboardStyles.table.mobileStatsContainer}>
-                                                    <div className={serviceDashboardStyles.table.mobileStatItem(
-                                                        "emerald",
-                                                    )}>
-                                                        <Calendar size={14} />
-                                                        <span className="leading-none">{s.totalAppointments}</span>
-                                                    </div>
-
-                                                    <div className={serviceDashboardStyles.table.mobileStatItem(
-                                                        "emerald"
-                                                    )}>
-                                                        <CheckCircle size={14} />
-                                                        <span className="leading-none text-emerald-700">{s.completd} Completed</span>
-                                                    </div>
-
-                                                    <div className={serviceDashboardStyles.table.mobileStatItem(
-                                                        "red",
-                                                    )}>
-                                                        <XCircle size={14} />
-                                                        <span className='leading-none text-red-500'>{s.canceled}Canceled</span>
-                                                    </div>
-
-                                                    <div className={serviceDashboardStyles.table.mobileStatItem(
-                                                        "emerald",
-                                                    )}>
-                                                        <BadgeIndianRupee size={14} />
-                                                        <span className='leading-none'>Total Earning: {formatCurrency(earning)}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })
-                    )}
-                </div>
-            </div>
-
-            {/* show more / less */}
-            {serviceDashboardStyles.length > INITIAL_COUNT && (
-                <div className={serviceDashboardStyles.showMore.container}>
-                    <button onClick={() => setShowAll((s) => !s)} className={serviceDashboardStyles.showMore.button}>{showAll ? "Show less" : `Show more (${filteredServices.length - INITIAL_COUNT})`}</button>
-                </div>
-            )}
+            <button
+              onClick={() => {
+                if (Array.isArray(servicesProp)) return;
+                fetchServices({ showLoading: true });
+              }}
+              className={serviceDashboardStyles.refresh.button(
+                Array.isArray(servicesProp),
+              )}
+              title={
+                Array.isArray(servicesProp)
+                  ? "Servicd provided by present component"
+                  : "Refresh"
+              }
+            >
+              Refresh
+            </button>
+          </div>
         </div>
+
+        <div className={serviceDashboardStyles.statGrid}>
+          <StatCard
+            icon={<ClipboardList size={18} />}
+            label="Total Services"
+            value={totals.totalServices}
+          />
+
+          <StatCard
+            icon={<Calendar size={18} />}
+            label="Total Appointments"
+            value={totals.totalAppointments}
+          />
+
+          <StatCard
+            icon={<BadgeIndianRupee size={18} />}
+            label="Total Earnings"
+            value={formatCurrency(totals.totalEarning)}
+          />
+
+          <StatCard
+            icon={<CheckCircle size={18} />}
+            label="Completed"
+            value={totals.totalCompleted}
+          />
+
+          <StatCard
+            icon={<XCircle size={18} />}
+            label="Canceled"
+            value={totals.totalCanceled}
+          />
+        </div>
+
+        {/* search bar */}
+        <div className={serviceDashboardStyles.search.container}>
+          <div className={serviceDashboardStyles.search.inputContainer}>
+            <Search size={16} className=" text-emerald-700" />
+            <input
+              type="text"
+              placeholder="Search services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={serviceDashboardStyles.search.input}
+            />
+            {searchQuery.length > 0 && (
+              <XCircle
+                size={16}
+                className=" text-red-500 cursor-pointer"
+                onClick={() => setSearchQuery("")}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* table list for tablet */}
+        <div className={serviceDashboardStyles.table.container}>
+          <div className={serviceDashboardStyles.table.headerMd}>
+            <div className={serviceDashboardStyles.table.headerText}>
+              Service
+            </div>
+
+            <div className={serviceDashboardStyles.table.headerText}>
+              Appointments
+            </div>
+
+            <div className={serviceDashboardStyles.table.headerText}>
+              Completed
+            </div>
+
+            <div className={serviceDashboardStyles.table.headerText}>
+              Canceled
+            </div>
+
+            <div className={serviceDashboardStyles.table.headerText}>
+              Earning
+            </div>
+          </div>
+
+          {/* for desktop*/}
+          <div className={serviceDashboardStyles.table.headerLg}>
+            <div className="col-span-5">Service</div>
+            <div className="col-span-2">Price</div>
+            <div className={serviceDashboardStyles.table.headerTextLg(1)}>
+              Appointments
+            </div>
+
+            <div className={serviceDashboardStyles.table.headerTextLg(1)}>
+              Completed
+            </div>
+
+            <div className={serviceDashboardStyles.table.headerTextLg(1)}>
+              Canceled
+            </div>
+            <div className="col-span-2 text-right">Earning</div>
+          </div>
+
+          <div className={serviceDashboardStyles.table.body}>
+            {loading ? (
+              <div className={serviceDashboardStyles.states.loading}>
+                Loading services...
+              </div>
+            ) : error ? (
+              <div className={serviceDashboardStyles.states.error}>
+                Error : {error}
+              </div>
+            ) : visibleServices.length === 0 ? (
+              <div className={serviceDashboardStyles.states.empty}>
+                No services found
+              </div>
+            ) : (
+              visibleServices.map((s) => {
+                const earning = s.completed * s.price;
+                return (
+                  <div key={s.id} className={serviceDashboardStyles.table.row}>
+                    {/* for tablet */}
+                    <div className={serviceDashboardStyles.table.tabletView}>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={serviceDashboardStyles.table.tabletImage}
+                        >
+                          <img
+                            src={s.image}
+                            alt={s.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        <div
+                          className={
+                            serviceDashboardStyles.table.tabletTextContainer
+                          }
+                        >
+                          <div
+                            className={
+                              serviceDashboardStyles.table.tabletServiceName
+                            }
+                          >
+                            {s.name}
+                          </div>
+                          <div
+                            className={serviceDashboardStyles.table.tabletPrice}
+                          >
+                            {formatCurrency(s.price)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className={serviceDashboardStyles.table.tabletCell}>
+                        {s.totalAppointments}
+                      </div>
+
+                      <div
+                        className={`${serviceDashboardStyles.table.tabletCell} text-emerald-700`}
+                      >
+                        {s.completd}
+                      </div>
+
+                      <div
+                        className={`${serviceDashboardStyles.table.tabletCell} text-red-500`}
+                      >
+                        {s.canceled}
+                      </div>
+
+                      <div
+                        className={`${serviceDashboardStyles.table.tabletCell} text-right`}
+                      >
+                        {formatCurrency(earning)}
+                      </div>
+                    </div>
+
+                    {/* for desktop view */}
+                    <div className="grid grid-cols-12 items-center gap-2">
+                      <div className=" col-span-5 flex items-center gap-4">
+                        <div
+                          className={serviceDashboardStyles.table.desktopImage}
+                        >
+                          <img
+                            src={s.image}
+                            alt={s.name}
+                            className=" w-full h-full object-cover"
+                          />
+                        </div>
+                        <h3
+                          className={
+                            serviceDashboardStyles.table.desktopServiceName
+                          }
+                        >
+                          {s.name}
+                        </h3>
+                      </div>
+
+                      {/* Price */}
+                      <div className="col-span-2">
+                        {formatCurrency(s.price)}
+                      </div>
+                      <div className="col-span-1 text-center">
+                        {s.totalAppointments}
+                      </div>
+                      <div className="col-span-1 text-center">
+                        {s.completed}
+                      </div>
+                      <div className="col-span-1 text-center">{s.canceled}</div>
+                      <div className="col-span-2 text-right">
+                        {formatCurrency(earning)}
+                      </div>
+                    </div>
+
+                    {/* Mobile view */}
+                    <div className={serviceDashboardStyles.table.mobileView}>
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={serviceDashboardStyles.table.mobileImage}
+                        >
+                          <img
+                            src={s.image}
+                            alt={s.name}
+                            className="w-full h-full oject-cover"
+                          />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className={
+                              serviceDashboardStyles.table.mobileServiceHeader
+                            }
+                          >
+                            <h3
+                              className={
+                                serviceDashboardStyles.table.mobileServiceName
+                              }
+                            >
+                              {s.name}
+                            </h3>
+                            <div className="text-sm font-medium">
+                              {formatCurrency(s.price)}
+                            </div>
+                          </div>
+
+                          <div
+                            className={
+                              serviceDashboardStyles.table.mobileStatsContainer
+                            }
+                          >
+                            <div
+                              className={serviceDashboardStyles.table.mobileStatItem(
+                                "emerald",
+                              )}
+                            >
+                              <Calendar size={14} />
+                              <span className="leading-none">
+                                {s.totalAppointments}
+                              </span>
+                            </div>
+
+                            <div
+                              className={serviceDashboardStyles.table.mobileStatItem(
+                                "emerald",
+                              )}
+                            >
+                              <CheckCircle size={14} />
+                              <span className="leading-none text-emerald-700">
+                                {s.completd} Completed
+                              </span>
+                            </div>
+
+                            <div
+                              className={serviceDashboardStyles.table.mobileStatItem(
+                                "red",
+                              )}
+                            >
+                              <XCircle size={14} />
+                              <span className="leading-none text-red-500">
+                                {s.canceled}Canceled
+                              </span>
+                            </div>
+
+                            <div
+                              className={serviceDashboardStyles.table.mobileStatItem(
+                                "emerald",
+                              )}
+                            >
+                              <BadgeIndianRupee size={14} />
+                              <span className="leading-none">
+                                Total Earning: {formatCurrency(earning)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* show more / less */}
+        {serviceDashboardStyles.length > INITIAL_COUNT && (
+          <div className={serviceDashboardStyles.showMore.container}>
+            <button
+              onClick={() => setShowAll((s) => !s)}
+              className={serviceDashboardStyles.showMore.button}
+            >
+              {showAll
+                ? "Show less"
+                : `Show more (${filteredServices.length - INITIAL_COUNT})`}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
 export default ServiceDashboard;
 
-function StatCard ({icon, label, value}) {
-    return (
-        <div className={serviceDashboardStyles.statCard.container}>
-            <div className={serviceDashboardStyles.statCard.iconContainer}>{icon}</div>
-            <div>
-                <div className={serviceDashboardStyles.statCard.label}>{label}</div>
-                <div className={serviceDashboardStyles.statCard.value}>{value}</div>
-            </div>
-        </div>
-    )
+function StatCard({ icon, label, value }) {
+  return (
+    <div className={serviceDashboardStyles.statCard.container}>
+      <div className={serviceDashboardStyles.statCard.iconContainer}>
+        {icon}
+      </div>
+      <div>
+        <div className={serviceDashboardStyles.statCard.label}>{label}</div>
+        <div className={serviceDashboardStyles.statCard.value}>{value}</div>
+      </div>
+    </div>
+  );
 }

@@ -13,7 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://backend-wy5h.onrender.com";
 // HELPERS FUNCTION
 function formatTwo(n) {
   return String(n).padStart(2, "0");

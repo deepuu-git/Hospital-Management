@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 const DoctorsPage = () => {
-  const API_BASE = "http://localhost:4000";
+  const API_BASE = "https://backend-wy5h.onrender.com";
 
   const [allDoctors, setAllDoctors] = useState([]);
   const [loading, setLoading] = useState(true);

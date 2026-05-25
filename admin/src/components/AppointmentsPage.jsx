@@ -1,10 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { pageStyles, statusClasses, keyframesStyles } from '../assets/dummyStyles'
-import { Pages } from '@mui/icons-material';
-import { BadgeIndianRupee, Calendar, Search } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  pageStyles,
+  statusClasses,
+  keyframesStyles,
+} from "../assets/dummyStyles";
+import { Pages } from "@mui/icons-material";
+import { BadgeIndianRupee, Calendar, Search } from "lucide-react";
 
-
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://backend-wy5h.onrender.com";
 
 // HELPERS FUNCTION
 // thsi function return the date as 31 march 2026
@@ -50,7 +53,6 @@ const AppointmentsPage = () => {
   const [filterSpeciality, setSpeciality] = useState("all");
   const [showAll, setShowAll] = useState(false);
 
-  
   // fetch list from server
   useEffect(() => {
     async function load() {
@@ -91,13 +93,12 @@ const AppointmentsPage = () => {
               date: a.date || (a.slot && a.slot.date) || "",
               time: a.time || (a.slot && a.slot.time) || "00:00 AM",
             },
-            status:
-              a.status || (a.payment && a.payment.status) || "Pending",
+            status: a.status || (a.payment && a.payment.status) || "Pending",
             raw: a, // keep original in case we need it
           };
         });
 
-        setAppointments(items);  // fetch ll the details present on the DB.
+        setAppointments(items); // fetch ll the details present on the DB.
       } catch (err) {
         console.error("Load appointments error:", err);
         setError(err.message || "Failed to load appointments");
@@ -114,15 +115,14 @@ const AppointmentsPage = () => {
     return ["all", ...Array.from(set)];
   }, [appointments]);
 
-   // filter by speciality , date & query;
+  // filter by speciality , date & query;
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
 
     return appointments.filter((a) => {
       if (
         filterSpeciality !== "all" &&
-        (a.speciality || "").toLowerCase() !==
-          filterSpeciality.toLowerCase()
+        (a.speciality || "").toLowerCase() !== filterSpeciality.toLowerCase()
       )
         return false;
 
@@ -139,7 +139,7 @@ const AppointmentsPage = () => {
     });
   }, [appointments, query, filterDate, filterSpeciality]);
 
-   // sort filtered by datetime in descending order.
+  // sort filtered by datetime in descending order.
   const sortedFiltered = useMemo(() => {
     return filtered.slice().sort((a, b) => {
       const da = dateTimeFromSlot(a.slot).getTime();
@@ -151,10 +151,10 @@ const AppointmentsPage = () => {
   // dispaly all the appt or the filterd ones
   const displayed = useMemo(
     () => (showAll ? sortedFiltered : sortedFiltered.slice(0, 8)),
-    [sortedFiltered, showAll]
+    [sortedFiltered, showAll],
   );
 
-   // if admin want to cancel a particular appointment
+  // if admin want to cancel a particular appointment
   async function adminCancelAppointment(id) {
     const appt = appointments.find((x) => x.id === id);
     if (!appt) return;
@@ -169,28 +169,21 @@ const AppointmentsPage = () => {
     const ok = window.confirm(
       `As admin, mark appointment for ${appt.patientName} with ${
         appt.doctorName
-      } on ${formatDateISO(appt.slot.date)} at ${
-        appt.slot.time
-      } as CANCELLED?`
+      } on ${formatDateISO(appt.slot.date)} at ${appt.slot.time} as CANCELLED?`,
     );
     if (!ok) return;
 
     try {
       setAppointments((prev) =>
-        prev.map((p) =>
-          p.id === id ? { ...p, status: "Canceled" } : p
-        )
+        prev.map((p) => (p.id === id ? { ...p, status: "Canceled" } : p)),
       );
 
       setShowAll(true);
 
-      const res = await fetch(
-        `${API_BASE}/api/appointments/${id}/cancel`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const res = await fetch(`${API_BASE}/api/appointments/${id}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -213,8 +206,8 @@ const AppointmentsPage = () => {
                   },
                   raw: updated,
                 }
-              : p
-          )
+              : p,
+          ),
         );
       }
     } catch (err) {
@@ -222,9 +215,7 @@ const AppointmentsPage = () => {
       setError(err.message || "Failed to cancel appointment");
 
       try {
-        const reload = await fetch(
-          `${API_BASE}/api/appointments?limit=200`
-        );
+        const reload = await fetch(`${API_BASE}/api/appointments?limit=200`);
         if (reload.ok) {
           const body = await reload.json();
 
@@ -234,29 +225,18 @@ const AppointmentsPage = () => {
             age: a.age || "",
             gender: a.gender || "",
             mobile: a.mobile || "",
-            doctorName:
-              (a.doctorId && a.doctorId.name) ||
-              a.doctorName ||
-              "",
+            doctorName: (a.doctorId && a.doctorId.name) || a.doctorName || "",
             speciality:
               (a.doctorId && a.doctorId.specialization) ||
               a.speciality ||
               a.specialization ||
               "General",
-            fee:
-              typeof a.fees === "number" ? a.fees : a.fee || 0,
+            fee: typeof a.fees === "number" ? a.fees : a.fee || 0,
             slot: {
-              date:
-                a.date || (a.slot && a.slot.date) || "",
-              time:
-                a.time ||
-                (a.slot && a.slot.time) ||
-                "00:00 AM",
+              date: a.date || (a.slot && a.slot.date) || "",
+              time: a.time || (a.slot && a.slot.time) || "00:00 AM",
             },
-            status:
-              a.status ||
-              (a.payment && a.payment.status) ||
-              "Pending",
+            status: a.status || (a.payment && a.payment.status) || "Pending",
             raw: a,
           }));
 
@@ -265,7 +245,6 @@ const AppointmentsPage = () => {
       } catch (e) {
         // ignore any errors if occur
       }
-      
     }
   }
 
@@ -276,36 +255,55 @@ const AppointmentsPage = () => {
         <header className={pageStyles.headerContainer}>
           <div className={pageStyles.headerTitleSection}>
             <h1 className={pageStyles.headerTitle}>Appointments </h1>
-            <p className={pageStyles.headerSubtitle}>Manage and search upcoming patient appointments</p>
+            <p className={pageStyles.headerSubtitle}>
+              Manage and search upcoming patient appointments
+            </p>
           </div>
 
           <div className={pageStyles.headerControlsSection}>
-            <div className='flex flex-col md:flex-col sm:flex-row items-center gap-3 w-full sm:w-auto'>
+            <div className="flex flex-col md:flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
               <div className={pageStyles.searchContainer}>
                 <Search size={16} className={Pages.searcIcon} />
-                <input className={pageStyles.searchInput} placeholder='Search doctor, patient, speciality or mobile' value={query} onChange={(e) => setQuery(e.target.value)} />
+                <input
+                  className={pageStyles.searchInput}
+                  placeholder="Search doctor, patient, speciality or mobile"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
               </div>
 
               <div className={pageStyles.filterContainer}>
                 <div className={pageStyles.dateFilter}>
                   <Calendar size={14} className={pageStyles.dateFilterIcon} />
-                  <input type="date" className={pageStyles.dateInput} value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+                  <input
+                    type="date"
+                    className={pageStyles.dateInput}
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
+                  />
                 </div>
 
-                <select className={pageStyles.selectFilter} value={filterSpeciality} onChange={(e) => setFilterSpeciality(e.target.value)}>{specialities.map((s) => (
-                  <option value={s} key={s}>
-                    {s === "all" ? "All Specialties" : s}
-                  </option>
-                ))}
+                <select
+                  className={pageStyles.selectFilter}
+                  value={filterSpeciality}
+                  onChange={(e) => setFilterSpeciality(e.target.value)}
+                >
+                  {specialities.map((s) => (
+                    <option value={s} key={s}>
+                      {s === "all" ? "All Specialties" : s}
+                    </option>
+                  ))}
                 </select>
 
-                <button onClick={() => {
-                  setQuery("");
-                  setFilterDate("");
-                  setFilterSpeciality("all");
-                  setShowAll(false);
-                  setError(null);
-                }} className={pageStyles.clearButton}
+                <button
+                  onClick={() => {
+                    setQuery("");
+                    setFilterDate("");
+                    setFilterSpeciality("all");
+                    setShowAll(false);
+                    setError(null);
+                  }}
+                  className={pageStyles.clearButton}
                 >
                   Clear
                 </button>
@@ -319,45 +317,53 @@ const AppointmentsPage = () => {
         ) : error ? (
           <div className={pageStyles.err}>{error}</div>
         ) : sortedFiltered.length === 0 ? (
-          <div className={pageStyles.noResultsContainer}>No appointments found.</div>
+          <div className={pageStyles.noResultsContainer}>
+            No appointments found.
+          </div>
         ) : (
           <main className={pageStyles.gridContainer}>
             {displayed.map((a, idx) => {
               const statusLower = (a.status || "").toLowerCase();
-              const isCancelled = statusLower === "canceled" || statusLower === "canceled";
+              const isCancelled =
+                statusLower === "canceled" || statusLower === "canceled";
               const isCompleted = statusLower === "completd";
               const isDisabled = isCancelled || isCompleted;
 
               return (
-                <div 
-                key={a.id}
-                style={{
-                  animation: `fadeup 420ms cubic-bezier(.2,.9,.2,1) forwards`,
-                  animationDelay: `${idx * 70}ms`,
-                  opacity: 0, 
-                }}
-                className={pageStyles.card}
+                <div
+                  key={a.id}
+                  style={{
+                    animation: `fadeup 420ms cubic-bezier(.2,.9,.2,1) forwards`,
+                    animationDelay: `${idx * 70}ms`,
+                    opacity: 0,
+                  }}
+                  className={pageStyles.card}
                 >
                   <div className={pageStyles.cardHeader}>
                     <div className="min-w-0">
-                      <div className='flex flex-wrap items-center gap-2'>
-                        <h3 className={pageStyles.cardTitle}>{a.patientName}</h3>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className={pageStyles.cardTitle}>
+                          {a.patientName}
+                        </h3>
 
                         <div className={pageStyles.patientInfo}>
                           <span>{a.age ? `${a.age} yrs` : ""}</span>
                           <span> {a.age ? ":" : ""} </span>
                           <span>{a.gender}</span>
                           <span className="hidden md:inline"> : </span>
-                          <span className=' max-w-30'>{a.mobile}</span>
+                          <span className=" max-w-30">{a.mobile}</span>
                         </div>
                       </div>
 
-                      <div className={pageStyles.doctorInfo}>{a.doctorName} : {" "}
-                        <span className={pageStyles.doctorSpeciality}>{a.speciality}</span>
+                      <div className={pageStyles.doctorInfo}>
+                        {a.doctorName} :{" "}
+                        <span className={pageStyles.doctorSpeciality}>
+                          {a.speciality}
+                        </span>
                       </div>
                     </div>
 
-                    <div className='text-right'>
+                    <div className="text-right">
                       <div className={pageStyles.feeLabel}>Fees</div>
                       <div className={pageStyles.feeAmount}>
                         <BadgeIndianRupee size={16} />
@@ -366,7 +372,7 @@ const AppointmentsPage = () => {
                     </div>
                   </div>
 
-                  <div className='flex items-center justify-between gap-3 flex-wrap'>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className={pageStyles.slotContainer}>
                       <Calendar size={14} className={pageStyles.slotIcon} />
                       <span>
@@ -374,47 +380,62 @@ const AppointmentsPage = () => {
                       </span>
                     </div>
 
-                    <div className={`${pageStyles.statusBadge} ${statusClasses(a.status)}`}>
+                    <div
+                      className={`${pageStyles.statusBadge} ${statusClasses(a.status)}`}
+                    >
                       {a.status ? a.status.toUpperCase() : "PENDING"}
                     </div>
 
-                    <div className='flex items-center gap-2'>
+                    <div className="flex items-center gap-2">
                       {isAdmin && (
-                        <button onClick={() => adminCancelAppointment(a.id)}
-                        title={
-                          isDisabled ? isCompleted ? "Cancot cancel a completed appointment" : "Already cancelled" : "Admin cancel (mark as cancelled)"
-                        }
-                        disabled={isDisabled}
-                        aria-disabled={isDisabled}
-                        className={pageStyles.cancelButton(
-                          isDisabled,
-                          isCompleted,
-                        )}>{isDisabled
-                           ? isCompleted
-                            ? "Completd" 
-                            : "Admin Cancelled"
-                            : "Admin Cancel"
-                            }
-                            </button>
+                        <button
+                          onClick={() => adminCancelAppointment(a.id)}
+                          title={
+                            isDisabled
+                              ? isCompleted
+                                ? "Cancot cancel a completed appointment"
+                                : "Already cancelled"
+                              : "Admin cancel (mark as cancelled)"
+                          }
+                          disabled={isDisabled}
+                          aria-disabled={isDisabled}
+                          className={pageStyles.cancelButton(
+                            isDisabled,
+                            isCompleted,
+                          )}
+                        >
+                          {isDisabled
+                            ? isCompleted
+                              ? "Completd"
+                              : "Admin Cancelled"
+                            : "Admin Cancel"}
+                        </button>
                       )}
                     </div>
                   </div>
-
                 </div>
               );
             })}
           </main>
         )}
 
-        {sortedFiltered.length > 8 ** (
-          <div className=' flex justify-center mt-4'>
-            <button onClick={() => setShowAll((s) => !s )} className={pageStyles.showMoreButton}>{showAll ? "Show Less" : `Show more (${sortedFiltered.length - 8})`}</button>
-          </div>
-        )}
+        {sortedFiltered.length >
+          8 **
+          (
+            <div className=" flex justify-center mt-4">
+              <button
+                onClick={() => setShowAll((s) => !s)}
+                className={pageStyles.showMoreButton}
+              >
+                {showAll
+                  ? "Show Less"
+                  : `Show more (${sortedFiltered.length - 8})`}
+              </button>
+            </div>
+          )}
       </div>
     </div>
   );
 };
 
 export default AppointmentsPage;
- 

@@ -41,13 +41,16 @@ const ContactSection = () => {
     setResponseMessage({ type: "", text: "" });
 
     try {
-      const response = await fetch("http://localhost:4000/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        "https://backend-wy5h.onrender.com/api/contact",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
-      });
+      );
 
       const data = await response.json();
 

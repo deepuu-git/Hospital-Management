@@ -20,7 +20,7 @@ import { useAuth, useUser } from "@clerk/clerk-react";
 import { AppsSharp } from "@mui/icons-material";
 import { Toaster } from "react-hot-toast";
 
-const API_BASE = "http://localhost:4000";
+const API_BASE = "https://backend-wy5h.onrender.com";
 const API = axios.create({ baseURL: API_BASE });
 
 // Helper functions
