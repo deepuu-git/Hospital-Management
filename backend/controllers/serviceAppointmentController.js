@@ -133,7 +133,7 @@ export const createServiceAppointment = async (req, res) => {
     let finalAmpm = ampm || null;
 
     if (time && (finalHour === null || finalHour === undefined)) {
-      const parsed = parseString(time);
+      const parsed = parseString(String(time));
       if (!parsed)
         return res.status(400).json({
           success: false,
@@ -165,7 +165,7 @@ export const createServiceAppointment = async (req, res) => {
         hour: Number(finalHour),
         minute: Number(finalMinute),
         ampm: finalAmpm,
-        status: { $ne: "Canceled " },
+        status: { $ne: "Canceled" },
       }).lean();
       if (existing)
         return res.status(409).json({
@@ -360,7 +360,7 @@ export const confirmServicePayment = async (req, res) => {
     if (!session_id)
       return res.status(400).json({
         success: false,
-        message: "Sssion Id is req",
+        message: "Session Id is required",
       });
     if (!stripe)
       return res.status(500).json({
@@ -474,7 +474,7 @@ export const getServiceAppointments = async (req, res) => {
       meta: { page, limit, total, count: appointments.length },
     });
   } catch (error) {
-    console.error("getServiceAppointments error:", err);
+    console.error("getServiceAppointments error:", error);
     return res.status(500).json({
       success: false,
       message: "Server error",
@@ -570,16 +570,13 @@ export const updateServiceAppointment = async (req, res) => {
     );
 
     if (!updated)
-      return (
-        res.status(404),
-        json({
-          success: false,
-          message: "Not found",
-        })
-      );
+      return res.status(404).json({
+        success: false,
+        message: "Not found",
+      });
     return res.json({
       success: true,
-      date: updated,
+      data: updated,
     });
   } catch (err) {
     console.error("updateServiceAppointment error:", err);
@@ -672,9 +669,9 @@ export const getServiceAppointmentStats = async (req, res) => {
     ]); // it will give you total appointment, complete appt
     // cancel appt and total earing done by them
     return res.json({
-      succe: true,
+      success: true,
       services,
-      totapServices: services.length,
+      totalServices: services.length,
     });
   } catch (err) {
     console.error("getServiceAppointmentStats error:", err);
