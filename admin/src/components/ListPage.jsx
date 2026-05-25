@@ -9,7 +9,6 @@ import {
   Trash2,
   BadgeIndianRupee,
 } from "lucide-react";
-import { DetailsSharp } from "@mui/icons-material";
 
 //Helper function
 // this function will give you output as DD - MM - YYYY;
@@ -289,7 +288,8 @@ const ListPage = () => {
         {displayed.map((doc) => {
           const id = doc._id || doc.id;
           const isOpen = expanded === id;
-          const isAvailable = doc.availability === "Available";
+          const isAvailable =
+            String(doc.availability).toLowerCase() === "available";
 
           const scheduleMap = buildScheduleMap(doc.schedule || {});
           const sortedDates = getSortedScheduleDates(scheduleMap);
@@ -389,7 +389,8 @@ const ListPage = () => {
                         <div className={doctorListStyles.qualificationsHeading}>
                           Qualificatioin
                         </div>
-                        <div className={DetailsSharp.qualificationsText}>
+
+                        <div className={doctorListStyles.qualificationsText}>
                           {doc.qualifications}
                         </div>
                       </div>
@@ -399,7 +400,7 @@ const ListPage = () => {
                           Schedule
                         </div>
 
-                        <div className="mt-2 flexflex-wrap gap-2">
+                        <div className="mt-2 flex flex-wrap gap-2">
                           {sortedDates.map((date) => {
                             const slots = scheduleMap[date] || [];
                             return (
