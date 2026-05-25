@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
 import { clerkMiddleware } from "@clerk/express";
 import { connectDB } from "./config/db.js";
 import doctorRouter from "./routes/doctorRouter.js";
@@ -39,7 +42,7 @@ app.use("/api/appointments", appointmentRouter);
 app.use("/api/service-appointments", serviceAppointmentRouter);
 app.use("/api/contact", contactRoutes);
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.send("API WORKING");
 });
 
