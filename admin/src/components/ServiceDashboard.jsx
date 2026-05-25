@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { serviceDashboardStyles } from "../assets/dummyStyles";
-import { MouseRounded } from "@mui/icons-material";
 import {
   BadgeIndianRupee,
   Calendar,
