@@ -2,16 +2,7 @@ import React, { useMemo, useState } from "react";
 import { navbarStylesDr } from "../assets/dummyStyles";
 import logo from "../assets/logo.png";
 import { NavLink, useLocation, useParams } from "react-router-dom";
-import {
-  Calendar,
-  DivideCircle,
-  Edit,
-  Home,
-  LogOut,
-  Menu,
-  X,
-} from "lucide-react";
-import { NoDrinks } from "@mui/icons-material";
+import { Calendar, Edit, Home, LogOut, Menu, X } from "lucide-react";
 
 const DoctorNavabr = () => {
   const [open, setOpen] = useState(false);
