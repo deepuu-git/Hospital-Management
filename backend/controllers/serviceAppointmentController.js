@@ -2,13 +2,6 @@ import ServiceAppointment from "../models/serviceAppointment.js";
 import Service from "../models/service.js";
 import Stripe from "stripe";
 import { getAuth } from "@clerk/express";
-import {
-  AppsOutage,
-  Description,
-  ScubaDiving,
-  Tune,
-  UpdateSharp,
-} from "@mui/icons-material";
 
 const stripeKey = process.env.STRIPE_SECRET_KEY || null;
 const stripe = stripeKey
