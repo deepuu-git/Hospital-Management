@@ -7,7 +7,6 @@ import {
 import { Link } from "react-router-dom";
 import { ChevronsRight, MousePointer2Off, X } from "lucide-react";
 import { Search } from "lucide-react";
-import { SpeedSharp } from "@mui/icons-material";
 
 const PlaceholderImg = "/placeholder-service.jpg";
 
@@ -182,7 +181,7 @@ const ServicePage = ({ previewCount = 999 }) => {
   }, [API_BASE]);
 
   const filteredServices = services.filter((s) =>
-    s.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    (s.name || "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const shown = filteredServices.slice(0, previewCount);
