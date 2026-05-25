@@ -447,7 +447,7 @@ const ServiceDashboard = ({ services: servicesProp = null }) => {
                       <div
                         className={`${serviceDashboardStyles.table.tabletCell} text-emerald-700`}
                       >
-                        {s.completd}
+                        {s.compeletd}
                       </div>
 
                       <div
@@ -509,7 +509,7 @@ const ServiceDashboard = ({ services: servicesProp = null }) => {
                           <img
                             src={s.image}
                             alt={s.name}
-                            className="w-full h-full oject-cover"
+                            className="w-full h-full object-cover"
                           />
                         </div>
 
@@ -591,7 +591,7 @@ const ServiceDashboard = ({ services: servicesProp = null }) => {
         </div>
 
         {/* show more / less */}
-        {serviceDashboardStyles.length > INITIAL_COUNT && (
+        {filteredServices.length > INITIAL_COUNT && (
           <div className={serviceDashboardStyles.showMore.container}>
             <button
               onClick={() => setShowAll((s) => !s)}
