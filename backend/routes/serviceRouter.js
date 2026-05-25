@@ -1,15 +1,21 @@
-import express from 'express';
-import multer from 'multer';
+import express from "express";
+import multer from "multer";
 
-import { createService, getServices,getServiceById, updateService, deleteService } from '../controllers/serviceController.js';
+import {
+  createService,
+  getServices,
+  getServiceById,
+  updateService,
+  deleteService,
+} from "../controllers/serviceController.js";
 
-const upload = multer ({ dest: "/tmp "});
+const upload = multer({ dest: "uploads/" });
 const serviceRouter = express.Router();
 
 serviceRouter.get("/", getServices);
 serviceRouter.get("/:id", getServiceById);
 
-serviceRouter.post('/', upload.single("image"), createService);
+serviceRouter.post("/", upload.single("image"), createService);
 serviceRouter.put("/:id", upload.single("image"), updateService);
 
 serviceRouter.delete("/:id", deleteService);

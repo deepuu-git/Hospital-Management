@@ -32,9 +32,6 @@ function normalizeSlotsToMap(slotStrings = []) {
   slotStrings.forEach((raw) => {
     console.log("RAW SLOT:", raw);
 
-    // expected format:
-    // 2026-05-14 10:30 AM
-
     const m = raw.match(
       /^(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i,
     );
@@ -71,14 +68,13 @@ function normalizeSlotsToMap(slotStrings = []) {
 
 // safely convert into number
 const sanitizePrice = (v) =>
-  Number(String(v ?? "0").replace(/[^\d.-]/g, "")) || 0; //  FIXED REGEX
+  Number(String(v ?? "0").replace(/[^\d.-]/g, "")) || 0;
 
 const parseAvailability = (v) => {
   const s = String(v ?? "available").toLowerCase();
   return s === "available" || s === "true";
 };
 
-// ================= CREATE =================
 export async function createService(req, res) {
   try {
     const b = req.body || {};
@@ -131,10 +127,9 @@ export async function createService(req, res) {
   }
 }
 
-// ================= GET ALL =================
 export async function getServices(req, res) {
   try {
-    const list = await Service.find().sort({ createdAt: -1 }).lean(); // ✅ FIXED (.sort instead of toSorted)
+    const list = await Service.find().sort({ createdAt: -1 }).lean();
 
     return res.status(200).json({
       success: true,
@@ -149,7 +144,6 @@ export async function getServices(req, res) {
   }
 }
 
-// ================= GET BY ID =================
 export async function getServiceById(req, res) {
   try {
     const { id } = req.params;
@@ -164,7 +158,7 @@ export async function getServiceById(req, res) {
 
     return res.status(200).json({
       success: true,
-      data: service, // ✅ FIXED (data instead of message)
+      data: service,
     });
   } catch (err) {
     console.error("GetServiceById error:", err);
@@ -175,7 +169,9 @@ export async function getServiceById(req, res) {
   }
 }
 
-// ================= UPDATE =================
+{
+  /* update */
+}
 export async function updateService(req, res) {
   try {
     const { id } = req.params;
@@ -230,12 +226,10 @@ export async function updateService(req, res) {
       }
     }
 
-    const updated = await Service.findByIdAndUpdate(
-      // ✅ FIXED SPELLING
-      id,
-      updateData,
-      { new: true, runValidators: true },
-    );
+    const updated = await Service.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
 
     return res.status(200).json({
       success: true,
@@ -251,7 +245,6 @@ export async function updateService(req, res) {
   }
 }
 
-// ================= DELETE =================
 export async function deleteService(req, res) {
   try {
     const { id } = req.params;
@@ -271,7 +264,7 @@ export async function deleteService(req, res) {
         console.warn(
           "Failed to delete image from cloudinary:",
           err?.message || err,
-        ); // ✅ FIXED
+        );
       }
     }
 
