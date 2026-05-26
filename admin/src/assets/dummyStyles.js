@@ -2,7 +2,7 @@
 export const doctorDetailStyles = {
   // Layout styles
   pageContainer:
-    "min-h- font-serif bg-linear-to-br from-emerald-50 via-white to-green-50 p-4 sm:p-6",
+    "min-h-screen font-serif bg-gradient-to-br from-emerald-50 via-white to-green-50 p-4 sm:p-6",
   maxWidthContainer: "max-w-4xl mx-auto",
   maxWidthContainerLg: "max-w-6xl mx-auto",
   maxWidthContainerXL: "max-w-9xl",
@@ -13,7 +13,7 @@ export const doctorDetailStyles = {
     "flex flex-col sm:flex-row justify-center items-center gap-3 mb-4",
   headerIconContainer: "p-3 bg-emerald-500 rounded-full shadow-lg",
   headerTitle:
-    "text-3xl sm:text-4xl md:text-5xl font-bold bg-linear-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent mt-2 sm:mt-0",
+    "text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent mt-2 sm:mt-0",
 
   // Form styles
   formContainer:
@@ -59,7 +59,8 @@ export const doctorDetailStyles = {
   submitButtonContainer: "md:col-span-2 flex justify-center mt-6",
   submitButton:
     "px-8 py-4 rounded-full font-semibold shadow-xl w-full md:w-auto",
-  submitButtonEnabled: "bg-linear-to-r from-emerald-500 to-cyan-500 text-white",
+  submitButtonEnabled:
+    "bg-gradient-to-r from-emerald-500 to-cyan-500 text-white",
   submitButtonDisabled: "opacity-60 cursor-not-allowed",
 
   // Toast styles
@@ -128,14 +129,15 @@ export const pageStyles = {
     "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
 
   card: "bg-white rounded-2xl p-3 sm:p-4 md:p-5 shadow-sm border border-emerald-100 flex flex-col gap-3 hover:shadow-md transform hover:-translate-y-1 transition",
-  cardHeader: "flex items-start lg:line-clamp-2 justify-between gap-3",
-  cardTitle: "text-base sm:text-lg font-medium text-emerald-800 truncate",
+  cardHeader: "flex items-start justify-between gap-3",
+  cardTitle:
+    "text-base sm:text-lg font-medium text-emerald-800 truncate  lg:line-clamp-2",
   patientInfo: "text-xs sm:text-sm text-emerald-500 flex items-center gap-2",
   doctorInfo: "mt-1 text-xs sm:text-sm text-emerald-600 truncate",
   doctorSpeciality: "font-medium text-emerald-700",
 
   feeLabel:
-    "text-nd lg:pt-3 lg:justify-start flex items-center font-bold text-emerald-700 text-xs sm:text-sm",
+    "lg:pt-3 lg:justify-start flex items-center font-bold text-emerald-700 text-xs sm:text-sm",
   feeAmount:
     "text-lg sm:text-xl font-semibold lg:justify-start text-emerald-800 flex items-center justify-end gap-1",
 
@@ -181,7 +183,7 @@ export const keyframesStyles = `
 export const dashboardStyles = {
   // Layout styles
   pageContainer:
-    "min-h-screen font-serif p-4 sm:p-6 bg-linear-to-br from-green-50 via-green-100 to-white",
+    "min-h-screen font-serif p-4 sm:p-6 bg-gradien-to-br from-green-50 via-green-100 to-white",
   maxWidthContainer: "max-w-7xl mx-auto",
 
   // Header styles
@@ -193,7 +195,7 @@ export const dashboardStyles = {
   statsGrid:
     "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6",
   statCard:
-    "p-4 rounded-full bg-linear-to-br from-emerald-100 to-emerald-50 shadow-sm border border-green-100",
+    "p-4 rounded-full bg-gradien-to-br from-emerald-100 to-emerald-50 shadow-sm border border-green-100",
   statCardContent: "flex items-center gap-3",
   statIconContainer: "p-2 bg-white/80 rounded-full shadow-inner",
   statLabel: "text-sm text-slate-600",
@@ -229,7 +231,7 @@ export const dashboardStyles = {
   tableCell: "px-6 py-4 whitespace-nowrap",
   tableCellFlex: "flex items-center gap-4",
   verticalLine:
-    "w-1 h-12 rounded-md mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-linear-to-b from-emerald-400 to-green-200",
+    "w-1 h-12 rounded-md mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-b from-emerald-400 to-green-200",
   doctorImage: "w-12 h-12 rounded-full object-cover border-2 border-green-100",
   doctorName: "text-sm font-medium text-slate-800",
   doctorId: "text-xs text-slate-500 mt-0.5",
@@ -277,14 +279,14 @@ export const dashboardStyles = {
 export const addServiceStyles = {
   // Container styles
   container: {
-    main: "min-h-screen font-serif bg-linear-to-br from-emerald-50 via-emerald-100 to-teal-50 relative flex items-center justify-center p-4 sm:p-6 overflow-x-hidden",
+    main: "min-h-screen font-serif bg-gradient-to-br from-emerald-50 via-emerald-100 to-teal-50 relative flex items-center justify-center p-4 sm:p-6 overflow-x-hidden",
     form: "w-full max-w-5xl bg-white/90 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-2xl border border-emerald-100/50 box-border",
   },
 
   // Header styles
   header: {
     title:
-      "text-2xl sm:text-3xl font-extrabold text-transparent bg-linear-to-r from-emerald-700 to-teal-600 bg-clip-text",
+      "text-2xl sm:text-3xl font-extrabold text-transparent bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text",
     subtitle: "text-sm text-gray-500 mt-1",
   },
 
@@ -293,7 +295,7 @@ export const addServiceStyles = {
     reset:
       "w-full sm:w-auto px-4 py-2 cursor-pointer rounded-full bg-white border border-emerald-100 hover:shadow transition-shadow duration-200",
     submit:
-      "inline-flex justify-center items-center gap-2 w-full sm:w-auto px-5 py-2 rounded-full bg-linear-to-r from-emerald-500 to-teal-500 text-white font-medium hover:shadow-lg transition-all duration-200 disabled:opacity-60",
+      "inline-flex justify-center items-center gap-2 w-full sm:w-auto px-5 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium hover:shadow-lg transition-all duration-200 disabled:opacity-60",
     addInstruction:
       "inline-flex cursor-pointer items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors",
     uploadImage:
@@ -301,7 +303,7 @@ export const addServiceStyles = {
     removeImage:
       "px-3 py-2 rounded-full bg-white border border-red-100 hover:shadow transition-shadow",
     addSlot:
-      "w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-linear-to-r from-emerald-500 to-teal-500 text-white font-medium hover:shadow-lg transition-all duration-200",
+      "w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium hover:shadow-lg transition-all duration-200",
     slotRemove: "p-1 rounded-full xl:-mr-1 hover:bg-white transition-colors",
     toastClose: "p-1 rounded-full hover:bg-white/50 transition-colors",
   },
@@ -311,7 +313,7 @@ export const addServiceStyles = {
     container: (hasError) =>
       `w-full rounded-2xl p-4 ${
         hasError
-          ? "border-2 border-red-200 bg-linear-to-b from-red-50 to-orange-50"
+          ? "border-2 border-red-200 bg-gradient-to-b from-red-50 to-orange-50"
           : "bg-linear-to-b from-emerald-50 to-teal-50 border border-emerald-100"
       } shadow-inner flex flex-col items-center gap-4`,
     preview:
@@ -372,15 +374,16 @@ export const addServiceStyles = {
     container: "fixed top-6 right-6 z-50 w-full max-w-sm",
     toastBase:
       "flex items-start gap-4 p-4 rounded-2xl border shadow-xl transform transition-all duration-300",
-    toastError: "bg-linear-to-r from-red-50 to-orange-50 border-red-100",
-    toastInfo: "bg-linear-to-r from-blue-50 to-cyan-50 border-blue-100",
+    toastError: "bg-gradient-to-r from-red-50 to-orange-50 border-red-100",
+    toastInfo: "bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-100",
     toastSuccess:
-      "bg-linear-to-r from-emerald-50 to-teal-50 border-emerald-100",
+      "bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-100",
     iconContainer: (type) => {
       const styles = {
-        error: "bg-linear-to-r from-red-100 to-orange-100 text-red-600",
-        info: "bg-linear-to-r from-blue-100 to-cyan-100 text-blue-600",
-        success: "bg-linear-to-r from-emerald-100 to-teal-100 text-emerald-600",
+        error: "bg-gradient-to-r from-red-100 to-orange-100 text-red-600",
+        info: "bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-600",
+        success:
+          "bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-600",
       };
       return `flex items-center justify-center w-10 h-10 rounded-full ${styles[type] || styles.success}`;
     },
@@ -1100,7 +1103,7 @@ export const serviceDashboardStyles = {
   // StatCard component styles
   statCard: {
     container:
-      "rounded-full bg-linear-to-br from-emerald-100 to-emerald-50 shadow-sm border border-green-100 p-4 gap-4 flex items-center",
+      "rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm border border-green-100 p-4 gap-4 flex items-center",
     iconContainer:
       "w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700",
     label: "text-sm text-gray-500",
