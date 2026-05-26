@@ -2,9 +2,6 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 
-import path from "path";
-import { fileURLToPath } from "url";
-
 import { clerkMiddleware } from "@clerk/express";
 import { connectDB } from "./config/db.js";
 import doctorRouter from "./routes/doctorRouter.js";
@@ -44,6 +41,10 @@ app.use("/api/contact", contactRoutes);
 
 app.get("/api", (req, res) => {
   res.send("API WORKING");
+});
+
+app.get("/", (req, res) => {
+  res.send("Backend Running Successfully");
 });
 
 app.listen(port, () => {
